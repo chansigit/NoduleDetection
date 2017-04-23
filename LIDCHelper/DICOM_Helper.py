@@ -1,11 +1,8 @@
 import os
 import dicom
-import types
 import numpy as np
 
-path = 'E:/code/dicom_data/1.3.6.1.4.1.14519.5.2.1.6279.6001.179049373636438705059720603192'
-
-
+# ==============================================================================
 # DICOM folder loading
 #    This function accepts a path that contains one patient's DICOM CT slices in a scan
 #    and returns a python list whose element is sorted DICOM CT slices.
@@ -32,9 +29,10 @@ def load_scan(path):
     return slices
 
 
-
+# ==============================================================================
 # Get pixel information from slices
-#    This function accepts a python list containing DICOM CT slices
+#    This function accepts a python list containing DICOM CT slices produced
+#    by load_scan(PATH_OF_DICOM_DIR)
 #    and returns a numerical 3-d array whose pixels correspond to CT values.
 #    The 1st dimension corresponds to the z-coordinate of each slice
 #    The 2nd and 3rd dimension correspond to the x and y coordinates of one image
@@ -60,40 +58,23 @@ def get_pixels_HU(slices):
     return np.array(image, dtype=np.int16)
 
 
-ct=load_scan(path)
-print(ct[0].SliceThickness)
-print(ct[1].SliceThickness)
-print(ct[2].SliceThickness)
-print(ct[10].SliceThickness)
-print(ct[50].SliceThickness)
-print(ct[100].SliceThickness)
-
-
-print(ct[0].ImagePositionPatient)
-print(ct[1].ImagePositionPatient)
-print(ct[2].ImagePositionPatient)
-print(ct[10].ImagePositionPatient)
-print(ct[50].ImagePositionPatient)
-print(ct[100].ImagePositionPatient)
-
-ct_slices= get_pixels_HU(load_scan(path))
-ct_slices.shape
-
-
+# ==============================================================================
+# Get Index of the slice with specified Z-coordinate
+#     This function accepts a python list containing DICOM CT slices produced
+#     by load_scan(PATH_OF_DICOM_DIR)
+#     and returns the single slice whose Z-coordinate corresponds to ZCoord
 def getIndexByZCoord(slices, ZCoord):
     FirstPosition = slices[0].ImagePositionPatient[2]
     Thickness     = slices[0].SliceThickness
-    idx = int((FirstPosition-zCoord)/Thickness)
+    idx = int((FirstPosition-ZCoord)/Thickness)
     if slices[idx].ImagePositionPatient[2] == ZCoord:
         return idx
     else:
         raise IndexError('ZCoord %f not found'%ZCoord)
 
-print(getIndexByZCoord(slices,-261))
-
-
 def getWindowFromSlice(ctMatrix, leftUpPos, winSize):
     xlim, ylim= ctMatrix.shape
     return ctMatrix[leftUpPos[0]:leftUpPos[0]+winSize, leftUpPos[1]:leftUpPos[1]+winSize]
 
-type(ct_slices[0][1:1+2,1:1+2])
+
+# ==============================================================================
