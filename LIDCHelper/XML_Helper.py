@@ -73,10 +73,8 @@ LidcReadMessage (root)
                 RoiInNodule = ubrNodule.getElementsByTagName('roi')
                 slicesAmongNodules = dict()
                 for roiIdx, roi in enumerate(RoiInNodule):
-                    isContour = roi.getElementsByTagName(
-                        'inclusion')[0].firstChild.data == "TRUE"
-                    zCoord = float(roi.getElementsByTagName(
-                        'imageZposition')[0].firstChild.data)
+                    isContour = roi.getElementsByTagName('inclusion')[0].firstChild.data == "TRUE"
+                    zCoord = float(roi.getElementsByTagName('imageZposition')[0].firstChild.data)
                     # ON_WHEN_DEBUG__ print('ROI%d %f'%(roiIdx,zCoord))
                     roiInOneSlice = []
                     # only keep the outer edge, ignore the inner edge.
@@ -137,7 +135,24 @@ LidcReadMessage (root)
         except IndexError:
             print('ERROR: doctorID or noduleID overflowed')
 
-    def getNoduleSlicesByZCoord(self, doctorID, noduleID, z):
-        return self.getNoduleSlices(doctorID, noduleID)[z]
+    def getNoduleEdgesByZCoord(self, doctorID, noduleID, z):
+        try:
+            return self.getNoduleSlices(doctorID, noduleID)[z]
+        except KeyError:
+            return list()
+
+    def getDoctorZCoords(self, doctorID):
+        docZCoords= []
+        noduleCnt =self.getDoctorCountOut(doctorID=doctorID)
+        for noduleID in range(noduleCnt):
+            docZCoords=docZCoords+self.getNoduleZCoords(doctorID=doctorID, noduleID=noduleID)
+        return set(docZCoords)
+
+    def getAllZCoords(self):
+        ZCoords=set()
+        doctorCnt=self.getDoctorCount()
+        for doctorID in range(doctorCnt):
+            ZCoords=ZCoords | self.getDoctorZCoords(doctorID=doctorID)
+        return ZCoords
 
 # ==============================================================================

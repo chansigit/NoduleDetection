@@ -137,8 +137,11 @@ LidcReadMessage (root)
         except IndexError:
             print('ERROR: doctorID or noduleID overflowed')
 
-    def getNoduleSlicesByZCoord(self, doctorID, noduleID, z):
-        return self.getNoduleSlices(doctorID, noduleID)[z]
+    def getNoduleEdgesByZCoord(self, doctorID, noduleID, z):
+        try:
+            return self.getNoduleSlices(doctorID, noduleID)[z]
+        except KeyError:
+            return list()
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -160,12 +163,12 @@ print('\n某个医生数出来的结节数')
 print(xml.getDoctorCountOut(doctorID=2))
 
 print('\n对于某个医生数出来的某个结节 其跨越的z坐标范围')
-print(xml.getNoduleZCoords(doctorID=2, noduleID=0))
+print(xml.getNoduleZCoords(doctorID=0, noduleID=0))
 
 print('\n对于某个医生数出来的某个结节 获取其所有层边界，并且遍历其所有层的边界点(为了打印方便取前三个)')
-dt = xml.getNoduleSlices(doctorID=2, noduleID=0)
+dt = xml.getNoduleSlices(doctorID=0, noduleID=0)
 for key, val in dt.items():
     print(val[0:0 + 3])
 
 print('\n对于某个医生数出来的某个结节 取其某一层的边界点')
-xml.getNoduleSlicesByZCoord(doctorID=2, noduleID=0, z=-175)
+print(xml.getNoduleEdgesByZCoord(doctorID=0, noduleID=0, z=-175))

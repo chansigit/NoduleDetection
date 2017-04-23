@@ -16,10 +16,18 @@ class Patient:
         self.pixelList   = DICOM_Helper.get_pixels_HU(self.sliceList)
         self.sliceCnt    = len(self.sliceList)
         self.sliceSize   = self.pixelList[0].shape
-        self.ZCoords     = [slice.ImagePositionPatient[2] for slice in self.sliceList]
+        self.ZCoords     = [float(slice.ImagePositionPatient[2]) for slice in self.sliceList]
         self.thickness   = self.sliceList[0].SliceThickness
         # Nodule annotation
         self.noduleInfo  = XML_Helper.NoduleInfo(self.nodulePath)
+        self.doctorCnt   = self.noduleInfo.getDoctorCount()
+        self.nodule_ZCoords = self.noduleInfo.getAllZCoords()
+
+        # list of set
+        self.doctor_ZCoords = [ self.noduleInfo.getDoctorZCoords(doctorID) for doctorID in range(self.doctorCnt)]
+        # list of int
+        self.doctorCountOut = [ self.noduleInfo.getDoctorCountOut(doctorID) for doctorID in range(self.doctorCnt)]
+
 
     # This function supports direct slice extracting by `patient[-35.0]`
     # using Z-coordinate as subscript
