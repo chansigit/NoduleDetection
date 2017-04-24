@@ -1,14 +1,14 @@
 from LIDCHelper.PatientClass import Patient
-
+from SlidingWindowClipping.Filter import winFilter
 patientPath= 'E:/code/dicom_data/1.3.6.1.4.1.14519.5.2.1.6279.6001.179049373636438705059720603192'
 p=Patient(patientPath)
-
+print((p.ZCoords))
+p.showSlice(ZCoord=-170)
 # print(p.sliceCnt)
 # print((p.pixelList))
 # print(p.sliceList[10].ImagePositionPatient)
 # print(p[-35.0])
 # print(p(-35.0))
-# print((p.ZCoords))
 # print(p.thickness)
 #
 #
@@ -65,16 +65,20 @@ for z in p.ZCoords:
                         continue
                     else: # z层在此结节里面标记过
                         # 求countour与所有窗的交集
-                        print(z)
-                        print(contour)
+                        print("Doctor=%d, z=%f"%(doctorID,z))
                         # 丢弃掉第三维，变成平面图形
                         contour=[(point3d[0], point3d[1]) for point3d in contour]
-                        print(contour)
-                        # 给一个filter喂进去slidingRects ，过滤出符合要求的slidingRects
-                        
-                        # 转换为正负样本形式，存下来
-                        input()
+                        # 给一个filter喂进去slidingRects ，过滤出符合要求的正负slidingRects的左上角顶点
+                        (posWins, negWins) =winFilter(contour=contour, winList=slidingRects, intersectRatio=0.3)
+                        posWins = [(win[0], win[1], z) for win in posWins]
+                        negWins = [(win[0], win[1], z) for win in negWins]
+                        positiveSamples += posWins
+                        negativeSamples += negWins
 
     # z不在任何一个结节层里面，z层全层划为负样本
     else:
         negativeSamples += [ (win[0],win[1],z) for win in slidingWins ]
+
+for i in positiveSamples:
+    print(i)
+    #print(positiveSamples)
