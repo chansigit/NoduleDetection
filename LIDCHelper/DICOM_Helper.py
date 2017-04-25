@@ -66,7 +66,7 @@ def get_pixels_HU(slices):
 def getIndexByZCoord(slices, ZCoord):
     FirstPosition = slices[0].ImagePositionPatient[2]
     Thickness     = slices[0].SliceThickness
-    idx = int((FirstPosition-ZCoord)/Thickness)
+    idx = int(round((FirstPosition-ZCoord)/Thickness))
     if slices[idx].ImagePositionPatient[2] == ZCoord:
         return idx
     else:
