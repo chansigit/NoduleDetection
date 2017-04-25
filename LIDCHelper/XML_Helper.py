@@ -74,6 +74,8 @@ LidcReadMessage (root)
                 slicesAmongNodules = dict()
                 for roiIdx, roi in enumerate(RoiInNodule):
                     isContour = roi.getElementsByTagName('inclusion')[0].firstChild.data == "TRUE"
+                    if not isContour:
+                        continue
                     zCoord = float(roi.getElementsByTagName('imageZposition')[0].firstChild.data)
                     # ON_WHEN_DEBUG__ print('ROI%d %f'%(roiIdx,zCoord))
                     roiInOneSlice = []
