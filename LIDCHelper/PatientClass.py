@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 from  matplotlib.patches import Polygon
 from  matplotlib.patches import Circle
 
-def drawPolygon(poly, color, alpha=0.5):
+def drawPolygon(poly, color, alpha=0.15):
     shape=Polygon(poly, alpha=alpha)
     shape.set_alpha(alpha)
     shape.set_color(color)
     plt.gca().add_artist(shape)
 
-def drawPoint(point, radius, color,alpha=0.5):
+def drawPoint(point, radius, color,alpha=0.15):
     cir = Circle(point, radius=radius)
     cir.set_alpha(alpha)
     cir.set_color(color)
@@ -72,18 +72,45 @@ class Patient:
 
     # ==========================================================================
     def showSlice(self, ZCoord):
-        idx = DICOM_Helper.getIndexByZCoord(self.sliceList, ZCoord)
+        # this function shows the CT image at ZCoord
+        try:
+            idx = DICOM_Helper.getIndexByZCoord(self.sliceList, ZCoord)
+        except IndexError:
+            print(">> ERROR: No Slice at this ZCoord `%f`"%ZCoord)
+            return
         sliceImage = self.pixelList[idx]
         pylab.imshow(sliceImage, cmap=pylab.cm.bone)
         pylab.show()
 
     # ==========================================================================
-    def showContour(self, ZCoord):
-        idx = DICOM_Helper.getIndexByZCoord(self.sliceList, ZCoord)
+    def showContour(self, ZCoord, alpha=0.15, radius=6):
+        # this function shows all doctors' annotation at ZCoord
+        try:
+            idx = DICOM_Helper.getIndexByZCoord(self.sliceList, ZCoord)
+        except IndexError:
+            print(">> ERROR: No Slice at this ZCoord `%f`"%ZCoord)
+            return
         sliceImage = self.pixelList[idx]
         pylab.imshow(sliceImage, cmap=pylab.cm.bone)
+        colorList=['b','g','c','r','m','y','k','w'] #maximum doctor cnt =8 for now
+        for doctorID in range(self.doctorCnt):
+            noduCnt = self.doctorCountOut[doctorID]
+            for noduID in range(noduCnt):
+                contour = self.noduleInfo.getNoduleEdgesByZCoord(doctorID, noduID, ZCoord)
+                if contour!=[]:
+                    contour = [(vertex[0],vertex[1]) for vertex in contour]
+                    if len(contour)==1:
+                        drawPoint(point=contour[0], radius=radius, color=colorList[doctorID], alpha=alpha)
+                    else:
+                        #print(contour)
+                        drawPolygon(poly=contour, color=colorList[doctorID], alpha=alpha)
         pylab.show()
 
+
+# next plan
+# show segmentation result
+# show mask
+# integrate segmentation into sampling
 
 # lung segment
 # https://www.kaggle.com/gzuidhof/data-science-bowl-2017/full-preprocessing-tutorial

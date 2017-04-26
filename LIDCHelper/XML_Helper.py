@@ -126,24 +126,28 @@ LidcReadMessage (root)
                   self.getDoctorCount())
 
     def getNoduleZCoords(self, doctorID, noduleID):
+        'Returns the Z-coords that the nodule crosses'
         try:
             return list(self.radiologistList[doctorID][noduleID].keys())
         except IndexError:
             print('ERROR: doctorID or noduleID overflowed')
 
     def getNoduleSlices(self, doctorID, noduleID):
+        'Returns a python dict() whose keys are z-coords, values are contour vertices'
         try:
             return self.radiologistList[doctorID][noduleID]
         except IndexError:
             print('ERROR: doctorID or noduleID overflowed')
 
     def getNoduleEdgesByZCoord(self, doctorID, noduleID, z):
+        "Return a nodule's contour at a certain z-coord"
         try:
             return self.getNoduleSlices(doctorID, noduleID)[z]
         except KeyError:
             return list()
 
     def getDoctorZCoords(self, doctorID):
+        "Return all Zcoords that has been marked by a doctor"
         docZCoords= []
         noduleCnt =self.getDoctorCountOut(doctorID=doctorID)
         for noduleID in range(noduleCnt):

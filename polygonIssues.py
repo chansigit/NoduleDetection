@@ -64,7 +64,7 @@ xyList = list(zip(pointListX, pointListY))
 p = Polygon(xyList, alpha=0.4)
 plt.gca().add_artist(p)
 
-pointListX=(0,400,250    )
+pointListX=(0,400,250)
 pointListY=(460,500,200)
 xyList = list(zip(pointListX, pointListY))
 p = Polygon(xyList)
