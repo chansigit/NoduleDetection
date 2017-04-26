@@ -108,6 +108,7 @@ class Patient:
 
 
 # next plan
+# first encapsule the sampling
 # show segmentation result
 # show mask
 # integrate segmentation into sampling
