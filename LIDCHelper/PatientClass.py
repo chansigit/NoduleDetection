@@ -6,6 +6,7 @@ import pylab
 from . import DICOM_Helper
 from . import XML_Helper
 from . import Filter_Helper
+from . import Segmentation_Helper
 
 import matplotlib.pyplot as plt
 from  matplotlib.patches import Polygon
@@ -41,6 +42,9 @@ class Patient:
         self.sliceSize   = self.pixelList[0].shape
         self.ZCoords     = [float(slice.ImagePositionPatient[2]) for slice in self.sliceList]
         self.thickness   = self.sliceList[0].SliceThickness
+        # 每一层CT image的掩码
+        #self.maskList = Segmentation_Helper.segment_lung_mask(self.pixelList, fill_lung_structures=False)
+        self.maskList=[ Segmentation_Helper.get_segmented_lungs(pixelMat) for pixelMat in self.pixelList ]
 
         # -------------------------------------------------------
         # Nodule annotation
@@ -57,6 +61,7 @@ class Patient:
 
         # 所有医生诊断出来的所有结节的数目     returns a list of int
         self.doctorCountOut = [ self.noduleInfo.getDoctorCountOut(doctorID) for doctorID in range(self.doctorCnt)]
+
 
 
     # ==========================================================================
@@ -149,6 +154,10 @@ class Patient:
                     # 那我们就要找是哪个结节在z这一层被该医生标记过，
                     # 并把该结节的边缘与所有的窗做交集，根据重叠面积进行判断
                     if z in self.doctor_ZCoords[doctorID]:
+                        # We need to further filter slidingRects at a specific ZCoord,
+                        # drop the slides lying outside of lung region and keep the interior ones.
+                        candidateWins=slidingRects
+
                         for noduleID  in range(self.doctorCountOut[doctorID]):
                             contour=self.noduleInfo.getNoduleEdgesByZCoord(doctorID, noduleID, z)
                             if contour==[]: # z层不在此结节里面标记过
@@ -158,7 +167,7 @@ class Patient:
                                 # 丢弃掉第三维，变成平面图形
                                 contour=[(point3d[0], point3d[1]) for point3d in contour]
                                 # 给一个filter喂进去slidingRects ，过滤出符合要求的正负slidingRects的左上角顶点
-                                (posWins, negWins) =Filter_Helper.winFilter(contour=contour, winList=slidingRects, intersectRatio=0.3)
+                                (posWins, negWins) =Filter_Helper.winFilter(contour=contour, winList=candidateWins, intersectRatio=0.3)
                                 posWins = [(win[0], win[1], z) for win in posWins]
                                 negWins = [(win[0], win[1], z) for win in negWins]
                                 positiveSamples += posWins
@@ -169,9 +178,28 @@ class Patient:
                 negativeSamples += [ (win[0],win[1],z) for win in slidingWins ]
         return((positiveSamples,negativeSamples,winSize))
 
+    def getMaskByZCoord(self, ZCoord):
+        try:
+            idx = DICOM_Helper.getIndexByZCoord(self.sliceList, ZCoord)
+        except IndexError:
+            print(">> ERROR: No Slice at this ZCoord `%f`"%ZCoord)
+            return
+        return self.maskList[idx]
+
+    # ==========================================================================
+    def showMask(self, ZCoord):
+        # this function shows the CT image at ZCoord
+        try:
+            idx = DICOM_Helper.getIndexByZCoord(self.sliceList, ZCoord)
+        except IndexError:
+            print(">> ERROR: No Slice at this ZCoord `%f`"%ZCoord)
+            return
+        maskImage = self.maskList[idx]
+        pylab.imshow(maskImage, cmap=pylab.cm.bone)
+        pylab.show()
 
 # next plan
-# first encapsule the sampling
+
 # show segmentation result
 # show mask
 # integrate segmentation into sampling
